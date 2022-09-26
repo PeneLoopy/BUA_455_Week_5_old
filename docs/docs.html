@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>BUA 455 - Week 5</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Penelope Pooler Eisenbies" />
+    <meta name="date" content="2022-09-26" />
+    <script src="docs_files/header-attrs/header-attrs.js"></script>
+    <link href="docs_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="docs_files/panelset/panelset.js"></script>
+    <link href="docs_files/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="docs_files/tile-view/tile-view.js"></script>
+    <script src="docs_files/xaringanExtra_fit-screen/fit-screen.js"></script>
+    <link href="docs_files/tachyons/tachyons.min.css" rel="stylesheet" />
+    <link href="docs_files/animate.css/animate.xaringan.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+background-image: url("docs_files/images/sloth_faded.png")
+background-size: cover
+
+class: bottom, right
+
+## BUA 455 - Week 5 - Lecture 10
+
+### Intro to Importing and Cleaning Data  
+
+&lt;br&gt;
+
+
+#### Penelope Pooler Eisenbies
+
+#### 2022-09-26
+
+[Wikipedia Sloth Page](https://en.wikipedia.org/wiki/Sloth)
+
+---
+
+### Comments About Quiz 1
+
+---
+
+### Importing and Cleaning Messy Data
+
+- So Far we have worked with R datasets 
+
+  - These datasets are already in a useable format
+  
+  - Sometimes they need to be modified, e.g., reshaped, filtered, etc.
+  
+- We have also imported **cleaned** data
+
+- Now we will work through the process of cleaning data
+
+- The goal of this portion of the course:
+
+  - Learn to clean data found on the internet to make it usable for plotting, display or analyses.
+  
+---
+
+### Importing Messy Data
+
+- **Best Practice:** Save dataset as save them as .csv files (UTF-8 format):
+
+  ![.csv file type screenshot](docs_files/images/csv.PNG)
+  
+- **DO NOT** edit data in Excel.  
+
+  - Editing choices in Excel are not documented
+  
+  - It is easy to make errors that corrupt the data
+  
+  - Anything you do this file will have to be repeated whenever you update the data.
+  
+---
+  
+### Questions to Answer **BEFORE** Importing DATA
+
+- Are there rows at the top that need to be removed. 
+  - If so, how many?
+
+- Are there non-data rows in the data?  
+  - If so, determine which variable(s) have no data for those rows.
+
+- Are there rows at the bottom that need to be removed?
+  - If so, how many? 
+  - Can they be removed with the non-data rows?
+
+- Do you know what each variable is? 
+  - If not, find out, before importing the data.  
+  - It may be helpful to create an informal data dictionary a separate Excel file. 
+
+- Do the data need to be reshaped so that each column is a single variable?
+
+---
+
+***TurningPoint Session ID: bua455s22***
+
+### Week 5 In-class Exercises (TP L10 - Q1)
+
+Examine the `box_office_mojo_2021.csv` file to determine how many rows will need to be removed at the top.
+
+This number will used for the `skip` option in the `read_csv` import command.
+
+How many rows should be skipped?
+
+&lt;br&gt;
+
+### Week 5 In-class Exercises (TP L10 - Q2)
+
+Examine the columns in the `.csv` file and widen them if needed to determine the first variable that is blank for non-data rows.  This variable will be used to filter out the non-data rows that indicate holidays or covid status.
+
+What is the first variable that can be used to filter out non-data rows?
+
+---
+
+.panelset[
+
+.panel[.panel-name[**Import the Data**]
+
+`skip=10` deletes all of the non-data rows above the variable names
+
+
+```r
+bom21 &lt;- read_csv("box_office_mojo_2021.csv", skip=10, show_col_types = FALSE) |&gt;
+  glimpse()
+```
+
+```
+## Rows: 547
+## Columns: 9
+## $ Date           &lt;chr&gt; "31-Dec", "New Year's Eve", "30-Dec", "29-Dec", "28-Dec…
+## $ Day            &lt;chr&gt; "Friday", NA, "Thursday", "Wednesday", "Tuesday", "Mond…
+## $ `Day #`        &lt;dbl&gt; 365, NA, 364, 363, 362, 361, 360, 359, NA, 358, 357, 35…
+## $ `Top 10 Gross` &lt;chr&gt; "$27,601,787", NA, "$35,021,475", "$34,092,399", "$36,1…
+## $ `%± YD`        &lt;chr&gt; "846.90%", NA, "2.70%", "-5.60%", "-7.90%", "-25.90%", …
+## $ `%± LW`        &lt;chr&gt; "-17.40%", NA, "-22.20%", "-27.80%", "1.40%", "-4.10%",…
+## $ Releases       &lt;dbl&gt; 25, NA, 26, 26, 25, 25, 27, 26, NA, 24, 28, 29, 26, 28,…
+## $ `#1 Release`   &lt;chr&gt; "Spider-Man: No Way Home", NA, "Spider-Man: No Way Home…
+## $ Gross          &lt;chr&gt; "$15,407,695", NA, "$20,717,908", "$20,327,774", "$21,3…
+```
+
+]
+
+.panel[.panel-name[**Filter out non-data rows**]
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  filter(!is.na(Day)) |&gt; # filters out rows that have no data for Day
+  glimpse()
+```
+
+```
+## Rows: 365
+## Columns: 9
+## $ Date           &lt;chr&gt; "31-Dec", "30-Dec", "29-Dec", "28-Dec", "27-Dec", "26-D…
+## $ Day            &lt;chr&gt; "Friday", "Thursday", "Wednesday", "Tuesday", "Monday",…
+## $ `Day #`        &lt;dbl&gt; 365, 364, 363, 362, 361, 360, 359, 358, 357, 356, 355, …
+## $ `Top 10 Gross` &lt;chr&gt; "$27,601,787", "$35,021,475", "$34,092,399", "$36,104,7…
+## $ `%± YD`        &lt;chr&gt; "846.90%", "2.70%", "-5.60%", "-7.90%", "-25.90%", "-6.…
+## $ `%± LW`        &lt;chr&gt; "-17.40%", "-22.20%", "-27.80%", "1.40%", "-4.10%", "-2…
+## $ Releases       &lt;dbl&gt; 25, 26, 26, 25, 25, 27, 26, 24, 28, 29, 26, 28, 30, 30,…
+## $ `#1 Release`   &lt;chr&gt; "Spider-Man: No Way Home", "Spider-Man: No Way Home", "…
+## $ Gross          &lt;chr&gt; "$15,407,695", "$20,717,908", "$20,327,774", "$21,346,8…
+```
+
+]
+
+.panel[.panel-name[**Rename and Select Variables**]
+
+Messy variable names with symbols can cause issues, even if code is correct
+One Solution is to select and reorder variables by column number and then rename using `names` command.
+This solution requires care in naming variables correctly
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  select(1,4:9) # selects columns 1 and 4-9
+
+names(bom21) &lt;- c("date","top10gross", "pct_ch_day", "pct_ch_wk", 
+                  "num_releases", "num1", "num1gross") # renames columns but requires care
+bom21 &lt;- bom21 |&gt;
+  select(date, top10gross, num1gross, num_releases, num1, pct_ch_day, pct_ch_wk) # reorder vars
+head(bom21)
+```
+
+```
+## # A tibble: 6 × 7
+##   date   top10gross  num1gross   num_releases num1          pct_ch_day pct_ch_wk
+##   &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;    
+## 1 31-Dec $27,601,787 $15,407,695           25 Spider-Man: … 846.90%    -17.40%  
+## 2 30-Dec $35,021,475 $20,717,908           26 Spider-Man: … 2.70%      -22.20%  
+## 3 29-Dec $34,092,399 $20,327,774           26 Spider-Man: … -5.60%     -27.80%  
+## 4 28-Dec $36,104,760 $21,346,817           25 Spider-Man: … -7.90%     1.40%    
+## 5 27-Dec $39,209,841 $24,770,593           25 Spider-Man: … -25.90%    -4.10%   
+## 6 26-Dec $52,943,454 $33,283,250           27 Spider-Man: … -6.30%     -25%
+```
+
+]
+
+]
+
+---
+
+### Cleaning Data and Converting (Coercing) Variable Types
+
+Examine each variable of the imported data
+
+Questions to Answer:
+
+- Is each variable type correct?
+  e.g. numeric (*`&lt;dbl&gt;`*), character (*`&lt;chr&gt;`*), date(*`&lt;date&gt;`*), factor(*`&lt;fct&gt;`*)
+  
+- If there are numeric variables that are classified as character, are their nuisance characters to remove?
+  e.g. `$`, `,`, `%`, etc.
+  
+- Are the date variables classified as character variables?
+  - If so, are they in a format that can be converted?
+    - Minimum required is year and month
+    - Day (of month) can be i ncluded if provided
+
+- Do numeric variables need to be changed to integers or rounded for plots or tables
+
+- Are text variables useful are should they be set aside?
+  - At minimum, we can examine the text variables for later use
+
+---
+
+### One way to Clean and Convert Variables to Numeric
+
+- In R, there are MANY ways to do each task
+
+- In this course, I show you one (or two) reliable ways to complete essential data management tasks.
+
+  - `gsub` can be used to remove nuisance characters
+
+  - AFTER removing nuisance characters,
+  
+    - `as.numeric` can be used to convert a character variable to numeric. 
+    
+
+```r
+head(bom21)
+```
+
+```
+## # A tibble: 6 × 7
+##   date   top10gross  num1gross   num_releases num1          pct_ch_day pct_ch_wk
+##   &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;    
+## 1 31-Dec $27,601,787 $15,407,695           25 Spider-Man: … 846.90%    -17.40%  
+## 2 30-Dec $35,021,475 $20,717,908           26 Spider-Man: … 2.70%      -22.20%  
+## 3 29-Dec $34,092,399 $20,327,774           26 Spider-Man: … -5.60%     -27.80%  
+## 4 28-Dec $36,104,760 $21,346,817           25 Spider-Man: … -7.90%     1.40%    
+## 5 27-Dec $39,209,841 $24,770,593           25 Spider-Man: … -25.90%    -4.10%   
+## 6 26-Dec $52,943,454 $33,283,250           27 Spider-Man: … -6.30%     -25%
+```
+
+---
+
+### Using `gsub` and `as.numeric` on ONE variable
+
+- `gsub` and `as.numeric` are used WITHIN `mutate`
+- Nusiance characters are specified in quotes
+- `as.numeric` is used at end of last `gsub` command.
+- Notice below that TWO consecutive `gsub` commands are used in same `mutate` command separated by a comma
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(top10gross = gsub("$","", top10gross, fixed = T),
+         top10gross = gsub(",","", top10gross, fixed = T) |&gt; as.numeric()) |&gt;
+  glimpse()
+```
+
+```
+## Rows: 365
+## Columns: 7
+## $ date         &lt;chr&gt; "31-Dec", "30-Dec", "29-Dec", "28-Dec", "27-Dec", "26-Dec…
+## $ top10gross   &lt;dbl&gt; 27601787, 35021475, 34092399, 36104760, 39209841, 5294345…
+## $ num1gross    &lt;chr&gt; "$15,407,695", "$20,717,908", "$20,327,774", "$21,346,817…
+## $ num_releases &lt;dbl&gt; 25, 26, 26, 25, 25, 27, 26, 24, 28, 29, 26, 28, 30, 30, 3…
+## $ num1         &lt;chr&gt; "Spider-Man: No Way Home", "Spider-Man: No Way Home", "Sp…
+## $ pct_ch_day   &lt;chr&gt; "846.90%", "2.70%", "-5.60%", "-7.90%", "-25.90%", "-6.30…
+## $ pct_ch_wk    &lt;chr&gt; "-17.40%", "-22.20%", "-27.80%", "1.40%", "-4.10%", "-25%…
+```
+
+---
+
+### Using `gsub` and `as.numeric` on MULTIPLE variables
+
+Same as previous slide, but all numeric variables are included in one mutate statement.
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(top10gross = gsub("$","", top10gross, fixed = T),  # convert top10gross (2 lines)
+         top10gross = gsub(",","", top10gross, fixed = T) |&gt; as.numeric(),
+         
+         num1gross = gsub("$","", num1gross, fixed = T),   # convert num1gross (2 lines)
+         num1gross = gsub(",","", num1gross, fixed = T) |&gt; as.numeric()) |&gt;
+  glimpse()
+```
+
+```
+## Rows: 365
+## Columns: 7
+## $ date         &lt;chr&gt; "31-Dec", "30-Dec", "29-Dec", "28-Dec", "27-Dec", "26-Dec…
+## $ top10gross   &lt;dbl&gt; 27601787, 35021475, 34092399, 36104760, 39209841, 5294345…
+## $ num1gross    &lt;dbl&gt; 15407695, 20717908, 20327774, 21346817, 24770593, 3328325…
+## $ num_releases &lt;dbl&gt; 25, 26, 26, 25, 25, 27, 26, 24, 28, 29, 26, 28, 30, 30, 3…
+## $ num1         &lt;chr&gt; "Spider-Man: No Way Home", "Spider-Man: No Way Home", "Sp…
+## $ pct_ch_day   &lt;chr&gt; "846.90%", "2.70%", "-5.60%", "-7.90%", "-25.90%", "-6.30…
+## $ pct_ch_wk    &lt;chr&gt; "-17.40%", "-22.20%", "-27.80%", "1.40%", "-4.10%", "-25%…
+```
+
+---
+
+### Week 5 Blackboard In-class Exercise 1
+
+**Using the mutate command above as an example, Create a new `mutate` command to:**
+
+- Remove `%` from each of the the `pct_ch` variables and convert them to numeric values.
+  
+  - In this case, only one `gsub` statement is needed for each variable.
+  - We are only removing 1 character, `%`.
+
+&lt;br&gt;
+  
+- When you are done, `glimpse` the data with the corrected percent variables.
+  
+- Submit the output from `glimpse` in the Blackboard Week 5 In-Class Assignment by copying and pasting this output showing these two percent variables have been converted to decimal (*`&lt;dbl&gt;`*) values.
+
+---
+
+### Solution to BB In-class Exercise 1
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(pct_ch_wk = gsub("%","", pct_ch_wk, fixed = T) |&gt; as.numeric(),  
+         pct_ch_day = gsub("%","", pct_ch_day, fixed = T) |&gt; as.numeric()) |&gt;
+  glimpse()
+```
+
+```
+## Rows: 365
+## Columns: 7
+## $ date         &lt;chr&gt; "31-Dec", "30-Dec", "29-Dec", "28-Dec", "27-Dec", "26-Dec…
+## $ top10gross   &lt;dbl&gt; 27601787, 35021475, 34092399, 36104760, 39209841, 5294345…
+## $ num1gross    &lt;dbl&gt; 15407695, 20717908, 20327774, 21346817, 24770593, 3328325…
+## $ num_releases &lt;dbl&gt; 25, 26, 26, 25, 25, 27, 26, 24, 28, 29, 26, 28, 30, 30, 3…
+## $ num1         &lt;chr&gt; "Spider-Man: No Way Home", "Spider-Man: No Way Home", "Sp…
+## $ pct_ch_day   &lt;dbl&gt; 846.9, 2.7, -5.6, -7.9, -25.9, -6.3, 81.7, -30.9, -4.7, 3…
+## $ pct_ch_wk    &lt;dbl&gt; -17.4, -22.2, -27.8, 1.4, -4.1, -25.0, -31.2, -75.7, 1609…
+```
+
+---
+
+### Converting Numeric to Integers and Creating Rounded Variables
+
+- Converting a decimal value to an integer is straightforward with the `as.numeric` command.
+
+- If the variable is discrete, e.g., number of releases (`num_releases`), then overwrite the orginal variable
+
+- In contrast, `top10gross` and `num1gross` are correctly formatted, but we may need rounded versions.
+  - Dividing these variables by one million makes sense for plots and table presentations
+  - In this case we will create NEW variables.
+  
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(num_releases = as.integer(num_releases),         # num_releases is overwritten
+         top10grossM = (top10gross/1000000) |&gt; round(2),  # top10grossM is a created variable
+         num1grossM = (num1gross/1000000) |&gt; round(2))    # num1grossM is a created variable
+head(bom21)
+```
+
+```
+## # A tibble: 6 × 9
+##   date  top10gross num1gross num_releases num1  pct_ch_day pct_ch_wk top10grossM
+##   &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;        &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+## 1 31-D…   27601787  15407695           25 Spid…      847.      -17.4        27.6
+## 2 30-D…   35021475  20717908           26 Spid…        2.7     -22.2        35.0
+## 3 29-D…   34092399  20327774           26 Spid…       -5.6     -27.8        34.1
+## 4 28-D…   36104760  21346817           25 Spid…       -7.9       1.4        36.1
+## 5 27-D…   39209841  24770593           25 Spid…      -25.9      -4.1        39.2
+## 6 26-D…   52943454  33283250           27 Spid…       -6.3     -25          52.9
+## # … with 1 more variable: num1grossM &lt;dbl&gt;
+```
+
+---
+
+### Converting Date text to a Date Variable with `lubridate`
+
+.panelset[
+
+.panel[.panel-name[**Intro to `lubridate`**]
+
+- The `lubridate` package makes dealing with date variables VERY straightforward
+
+- All that is needed is a **year, month (text or numeric), and a day of month**.
+
+- Values can be in any order with any separator
+
+- At present, the `date` variable in our dataset includes day of month and month, e.g. "31-Dec"
+
+  - We will add a year value to this text variable with a `paste` command, e.g. "31-Dec-2021"
+
+  - NOTE that the order of the information is Day, Month, Year
+ 
+  - That order means we will use the `dmy` command to convert the text to a date.
+
+- Afterwards, we can create any other data and time variables needed from this date variable.
+  - e.g. day of week, day of year, quarter, month, etc.
+
+]
+
+.panel[.panel-name[**Adding year to date text**]
+
+-`paste` is one way to combine strings of text
+- Below I show how to specify the separator (`sep`)
+- `paste` is also one way to join the text from two or more columns
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(date = paste(date,"2021", sep="-"))
+head(bom21)
+```
+
+```
+## # A tibble: 6 × 9
+##   date  top10gross num1gross num_releases num1  pct_ch_day pct_ch_wk top10grossM
+##   &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;        &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+## 1 31-D…   27601787  15407695           25 Spid…      847.      -17.4        27.6
+## 2 30-D…   35021475  20717908           26 Spid…        2.7     -22.2        35.0
+## 3 29-D…   34092399  20327774           26 Spid…       -5.6     -27.8        34.1
+## 4 28-D…   36104760  21346817           25 Spid…       -7.9       1.4        36.1
+## 5 27-D…   39209841  24770593           25 Spid…      -25.9      -4.1        39.2
+## 6 26-D…   52943454  33283250           27 Spid…       -6.3     -25          52.9
+## # … with 1 more variable: num1grossM &lt;dbl&gt;
+```
+]
+
+.panel[.panel-name[**Convert to a Date variable**]
+
+- `date` in the dataset `bom21` is a character variable
+- The information is in the order day-month-year, so we use the command `dmy`
+- We overwrite the current variable because the text version is not useful
+- NOTE: `paste` and `dmy` could be done in one command : `dmy(paste(date, "2021"))`
+- `sep` was not required but was shown as an example
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(date = dmy(date)) 
+head(bom21)
+```
+
+```
+## # A tibble: 6 × 9
+##   date       top10gross num1gross num_releases num1         pct_ch_day pct_ch_wk
+##   &lt;date&gt;          &lt;dbl&gt;     &lt;dbl&gt;        &lt;int&gt; &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;
+## 1 2021-12-31   27601787  15407695           25 Spider-Man:…      847.      -17.4
+## 2 2021-12-30   35021475  20717908           26 Spider-Man:…        2.7     -22.2
+## 3 2021-12-29   34092399  20327774           26 Spider-Man:…       -5.6     -27.8
+## 4 2021-12-28   36104760  21346817           25 Spider-Man:…       -7.9       1.4
+## 5 2021-12-27   39209841  24770593           25 Spider-Man:…      -25.9      -4.1
+## 6 2021-12-26   52943454  33283250           27 Spider-Man:…       -6.3     -25  
+## # … with 2 more variables: top10grossM &lt;dbl&gt;, num1grossM &lt;dbl&gt;
+```
+
+]
+
+.panel[.panel-name[**Create Other Date Variables**]
+
+- `lubridate` allows you to also create other variables from your `date` variable
+- The [lubridate Cheat Sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf) is a great reference.
+- Below I demonstrate how to create month and day of week variables in abbreviated (`abbr`) text format.
+
+
+```r
+bom21 &lt;- bom21 |&gt;
+  mutate(month = month(date, label=T, abbr=T),
+         day = wday(date, label=T, abbr=T)) |&gt;
+  glimpse()
+```
+
+```
+## Rows: 365
+## Columns: 11
+## $ date         &lt;date&gt; 2021-12-31, 2021-12-30, 2021-12-29, 2021-12-28, 2021-12-…
+## $ top10gross   &lt;dbl&gt; 27601787, 35021475, 34092399, 36104760, 39209841, 5294345…
+## $ num1gross    &lt;dbl&gt; 15407695, 20717908, 20327774, 21346817, 24770593, 3328325…
+## $ num_releases &lt;int&gt; 25, 26, 26, 25, 25, 27, 26, 24, 28, 29, 26, 28, 30, 30, 3…
+## $ num1         &lt;chr&gt; "Spider-Man: No Way Home", "Spider-Man: No Way Home", "Sp…
+## $ pct_ch_day   &lt;dbl&gt; 846.9, 2.7, -5.6, -7.9, -25.9, -6.3, 81.7, -30.9, -4.7, 3…
+## $ pct_ch_wk    &lt;dbl&gt; -17.4, -22.2, -27.8, 1.4, -4.1, -25.0, -31.2, -75.7, 1609…
+## $ top10grossM  &lt;dbl&gt; 27.60, 35.02, 34.09, 36.10, 39.21, 52.94, 56.48, 31.09, 4…
+## $ num1grossM   &lt;dbl&gt; 15.41, 20.72, 20.33, 21.35, 24.77, 33.28, 31.61, 19.66, 2…
+## $ month        &lt;ord&gt; Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, De…
+## $ day          &lt;ord&gt; Fri, Thu, Wed, Tue, Mon, Sun, Sat, Fri, Thu, Wed, Tue, Mo…
+```
+
+
+]
+  
+]
+
+---
+
+### Week 5 Blackboard In-class Exercise 2
+
+**Add to the mutate statement above to to create the variable `quart` (quarter).**
+
+- Use command `quarter` from `lubridate` package
+
+- Examine command in help window using `?quarter` 
+
+- Check [cheat sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf)
+  
+  - NOTE: There is no `label` or `abbr` option for the `quarter` command.
+
+&lt;br&gt;
+
+Submit the output from `glimpse` in the Blackboard Week 5 In-Class Assignment by copying and pasting this output showing `day`, `month`, and `quarter` have been added to the data.
+
+---
+
+### Solution to BB In-class Exercise 1
+
+
+```r
+bom21 &lt;- bom21 |&gt; 
+  mutate(quart = quarter(date)) |&gt; # returns numeric value for quarter
+  glimpse()                        # text labels can be created later with ifelse
+```
+
+```
+## Rows: 365
+## Columns: 12
+## $ date         &lt;date&gt; 2021-12-31, 2021-12-30, 2021-12-29, 2021-12-28, 2021-12-…
+## $ top10gross   &lt;dbl&gt; 27601787, 35021475, 34092399, 36104760, 39209841, 5294345…
+## $ num1gross    &lt;dbl&gt; 15407695, 20717908, 20327774, 21346817, 24770593, 3328325…
+## $ num_releases &lt;int&gt; 25, 26, 26, 25, 25, 27, 26, 24, 28, 29, 26, 28, 30, 30, 3…
+## $ num1         &lt;chr&gt; "Spider-Man: No Way Home", "Spider-Man: No Way Home", "Sp…
+## $ pct_ch_day   &lt;dbl&gt; 846.9, 2.7, -5.6, -7.9, -25.9, -6.3, 81.7, -30.9, -4.7, 3…
+## $ pct_ch_wk    &lt;dbl&gt; -17.4, -22.2, -27.8, 1.4, -4.1, -25.0, -31.2, -75.7, 1609…
+## $ top10grossM  &lt;dbl&gt; 27.60, 35.02, 34.09, 36.10, 39.21, 52.94, 56.48, 31.09, 4…
+## $ num1grossM   &lt;dbl&gt; 15.41, 20.72, 20.33, 21.35, 24.77, 33.28, 31.61, 19.66, 2…
+## $ month        &lt;ord&gt; Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, Dec, De…
+## $ day          &lt;ord&gt; Fri, Thu, Wed, Tue, Mon, Sun, Sat, Fri, Thu, Wed, Tue, Mo…
+## $ quart        &lt;int&gt; 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, …
+```
+
+
+---
+
+### Plotting Data using Date Variable (Time Series Plot)
+
+.panelset[
+
+.panel[.panel-name[**Why Plot a Time Series?`**]
+
+- Date is treated as numeric and specified as the x-axis.
+
+  - Date can be used for filtered to limit time series
+
+- Plotting percent change over time shows some surprising results
+
+  - I am puzzled how BOM calculates these values.
+  
+- If I were using these data for consulting I would:
+  
+  - Reach out to BOM for clarification
+    
+  - Calculate a percent change variable myself using `lag`
+  
+- It is often useful to plot data which allows you to see quirks that would otherwise not be noticeable.
+
+]
+
+.panel[.panel-name[**R Code to Create Plot**]
+
+
+```r
+bom21_pct &lt;- bom21 |&gt;
+  select(date, pct_ch_day, pct_ch_wk) |&gt;
+  rename(Daily=pct_ch_day, Weekly=pct_ch_wk) |&gt;
+  pivot_longer(cols=Daily:Weekly,                 # data reshaped using pivot_longer
+               names_to = "type_pct_ch",
+               values_to = "pct") |&gt;
+glimpse()
+```
+
+```
+## Rows: 730
+## Columns: 3
+## $ date        &lt;date&gt; 2021-12-31, 2021-12-31, 2021-12-30, 2021-12-30, 2021-12-2…
+## $ type_pct_ch &lt;chr&gt; "Daily", "Weekly", "Daily", "Weekly", "Daily", "Weekly", "…
+## $ pct         &lt;dbl&gt; 846.9, -17.4, 2.7, -22.2, -5.6, -27.8, -7.9, 1.4, -25.9, -…
+```
+
+```r
+pct_ch_lineplot &lt;- bom21_pct |&gt;
+  ggplot() +
+  geom_line(aes(x=date, y=pct, color=type_pct_ch)) +
+  theme_classic() +
+  labs(x="Date", y="Percent Change", color="") + # plot is minimally formatted
+  lims(y=c(-100, 2000))                          # labels and y axis limits are specified
+```
+
+]
+
+.panel[.panel-name[**Box Office Pct. Change Plot**]
+
+&lt;img src="docs_files/figure-html/bom21 pct change time series plot-1.png" width="1080" /&gt;
+
+]
+
+
+]
+
+---
+
+### Save (Export) Clean Dataset
+
+- You can create other variables, but this is now a clean (tidy) dataset.
+
+  - In future weeks we will talk more about creating factor variables.
+
+- A good practice is to save your clean dataset by exporting it as a .csv file
+
+- First we will use select to reorder the variables
+
+  - Group time variables followed by the rest
+  
+  - `:` can be used to list the rest of the variables
+
+
+```r
+# reorder variables
+bom21 &lt;- bom21 |&gt;
+  select(date, quart, month, day, top10gross, top10grossM, num1gross, num1grossM,
+         num_releases:pct_ch_wk) 
+
+# export clean data
+bom21 |&gt; write_csv("box_office_mojo_2021_tidy.csv")
+```
+
+---
+
+### Preview of Next week
+
+- Repeating these steps for Box office 2020 data
+
+- Examining/Cleaning Bureau of Labor Statistics data
+
+- Writing functions to automate process
+
+- Joining data from multiple datasets
+
+- Intro to time series (xts) data
+
+- HW 4 will be assigned
+
+---
+
+background-image: url("docs_files/images/tired_panda_faded.png")
+background-size: cover
+
+.pull-left[
+
+### **Key Points from Week 5**
+
+.bg-azure.b--dark_cyan.ba.bw2.br3.shadow-5.ph2[
+
+**Review Quiz 1**
+
+- Come see me or a TA with Questions
+
+- At least one question from Quiz 1 will be on Quiz 2
+
+- Other questions on Quiz 2 will build on Quiz 1
+
+**Cleaning Messy Data**
+
+- There are always may ways to accomplish each goal
+
+- Each messy dataset has unique challenges
+
+- Mastering and combining these core skills will allow you to clean any dataset
+
+**Plotting Data**
+
+- It is often helpful to select variables and reshape data for a plot
+
+]
+
+]
+
+.pull-right[
+
+.bg-azure.b--dark_cyan.ba.bw2.br3.shadow-5.ph3[
+**You may submit an 'Engagement Question or Comment' about Week 5 (Lecture 10) until Thursday, 9/22, at midnight on Blackboard.**
+]
+
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current%/%total%",
+"highlightStyle": "tomorrow-night-bright",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": true,
+"keep_md": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
